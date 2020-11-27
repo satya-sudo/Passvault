@@ -1,4 +1,6 @@
 import sqlite3
+from PasswordHashing import checkPassword,hashPassword
+
 
 # innitializing sqlite3 for python
 conn=sqlite3.connect("data.db")
@@ -37,9 +39,11 @@ def checkAvaliableUsername(username):
     
 
 def createUser(username,password):
+
+    hashpassword = hashPassword(password)
     with conn:
         cur.execute("INSERT INTO  User VALUES (null,?,?)",
-        (username,password))
+        (username,hashpassword))
     cur.execute('SELECT * FROM User WHERE username=:username',{'username':username})
     return cur.fetchone()[0:2]
     
@@ -54,7 +58,7 @@ def signInUser(username,password):
     gotUser = cur.fetchone()
     if gotUser == None:
         return None
-    if gotUser[2] == password:
+    if checkPassword(password,gotUser[2]):
         print(gotUser)
         return gotUser[0:2]
     else:
